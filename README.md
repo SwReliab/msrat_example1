@@ -236,7 +236,7 @@ mvfplot(time=bugs$project1$days, fault=bugs$project1$bugs,
 
     ## Warning: `mapping` is not used by stat_function()
 
-![](msrat_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-5-1.png)<!-- -->
 
 project2
 
@@ -247,7 +247,7 @@ mvfplot(time=bugs$project2$days, fault=bugs$project2$bugs,
 
     ## Warning: `mapping` is not used by stat_function()
 
-![](msrat_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-6-1.png)<!-- -->
 
 project3
 
@@ -258,7 +258,7 @@ mvfplot(time=bugs$project3$days, fault=bugs$project3$bugs,
 
     ## Warning: `mapping` is not used by stat_function()
 
-![](msrat_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-7-1.png)<!-- -->
 
   - モデルを固定する場合は `Rsrat::fit.srm.nhpp(time=dat$days, fault=dat$bugs,
     srm.names="tlogis")` のように `srm.names`
@@ -335,7 +335,7 @@ mvfplot(time=bugs$project1$days, fault=bugs$project1$bugs,
     
     ## Warning: `mapping` is not used by stat_function()
 
-![](msrat_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-12-1.png)<!-- -->
 
 project2
 
@@ -348,7 +348,7 @@ mvfplot(time=bugs$project2$days, fault=bugs$project2$bugs,
     
     ## Warning: `mapping` is not used by stat_function()
 
-![](msrat_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-13-1.png)<!-- -->
 
 project3
 
@@ -361,7 +361,7 @@ mvfplot(time=bugs$project3$days, fault=bugs$project3$bugs,
     
     ## Warning: `mapping` is not used by stat_function()
 
-![](msrat_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-14-1.png)<!-- -->
 
 #### 変数選択で効果のある要因だけを残す
 
@@ -432,7 +432,7 @@ mvfplot(time=bugs$project1$days, fault=bugs$project1$bugs,
     
     ## Warning: `mapping` is not used by stat_function()
 
-![](msrat_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-18-1.png)<!-- -->
 
 project2
 
@@ -447,7 +447,7 @@ mvfplot(time=bugs$project2$days, fault=bugs$project2$bugs,
     
     ## Warning: `mapping` is not used by stat_function()
 
-![](msrat_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-19-1.png)<!-- -->
 
 project3
 
@@ -462,7 +462,7 @@ mvfplot(time=bugs$project3$days, fault=bugs$project3$bugs,
     
     ## Warning: `mapping` is not used by stat_function()
 
-![](msrat_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-20-1.png)<!-- -->
 
 ### smetricsを使って再推定する（その2）
 
@@ -526,7 +526,7 @@ mvfplot(time=bugs$project1$days, fault=bugs$project1$bugs,
     
     ## Warning: `mapping` is not used by stat_function()
 
-![](msrat_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-24-1.png)<!-- -->
 
 project2
 
@@ -539,7 +539,7 @@ mvfplot(time=bugs$project2$days, fault=bugs$project2$bugs,
     
     ## Warning: `mapping` is not used by stat_function()
 
-![](msrat_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-25-1.png)<!-- -->
 
 project3
 
@@ -552,7 +552,7 @@ mvfplot(time=bugs$project3$days, fault=bugs$project3$bugs,
     
     ## Warning: `mapping` is not used by stat_function()
 
-![](msrat_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-26-1.png)<!-- -->
 
 #### 変数選択で効果のある要因だけを残す
 
@@ -620,7 +620,7 @@ mvfplot(time=bugs$project1$days, fault=bugs$project1$bugs,
     
     ## Warning: `mapping` is not used by stat_function()
 
-![](msrat_files/figure-gfm/unnamed-chunk-30-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-30-1.png)<!-- -->
 
 project2
 
@@ -635,7 +635,7 @@ mvfplot(time=bugs$project2$days, fault=bugs$project2$bugs,
     
     ## Warning: `mapping` is not used by stat_function()
 
-![](msrat_files/figure-gfm/unnamed-chunk-31-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-31-1.png)<!-- -->
 
 project3
 
@@ -650,4 +650,4 @@ mvfplot(time=bugs$project3$days, fault=bugs$project3$bugs,
     
     ## Warning: `mapping` is not used by stat_function()
 
-![](msrat_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
+![](README_files/figure-gfm/unnamed-chunk-32-1.png)<!-- -->
