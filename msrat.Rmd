@@ -1,0 +1,325 @@
+---
+title: "msrat_example"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## msrat利用例
+
+msratでは以下の二種類のメトリクスが利用できます．
+
+- d-metrics: dynamic メトリクス．テスト期間で変化するもの．例えば，その日のテストケース数や検証した機能数など
+- s-metrics: static メトリクス．テスト期間を通じて基本的に変化しないもの．開発規模など
+
+ここでは s-metrics の利用例を示します．
+過去の類似プロジェクトデータを利用し，現在のプロジェクトを評価する．
+
+### Step 1: データ収集
+
+- 次のデータを収集
+  - 総コード行数
+  - バグ個数データ：日数とその時に見つかったバグ数
+
+### Step 2: msratのインストールとロード
+
+- Rstudioでdevtoolsをインストール
+
+```r
+install.packages(pkgs="devtools")
+```
+- msratのインストール
+
+WindowsではRtoolsが必要になると思います
+
+```r
+library(devtools)
+devtools::install_github("SwReliab/msrat")
+```
+
+```{r}
+library(msrat)
+```
+
+### Step 3: データの整形
+
+s-metrics（ここの例では現在の開発プロジェクト`project1`と過去の二つの開発プロジェクト`project2`,`project3`のコード行数）を次のようなCSVにまとめる．
+
+以下は実際のデータではなく例のために作成した人工的なデータです．
+
+`smetrics.csv`
+
+||KLOC|
+|:-|-:|
+|project1|55|
+|project2|185|
+|project3|235|
+
+- ポイント
+  - 列見出しをつけておく
+  - 各行に各プロジェクトデータをいれる
+  - 各行の先頭列はプロジェクト名（英字でスペースなしにしておくと後々便利）
+
+次に各プロジェクトのバグデータを次のようなCSVにまとめる
+
+`project1.csv`
+
+- １稼働日毎のバグ数
+
+|days|bugs|
+|-:|-:|
+|1|3|
+|1|0|
+|1|2|
+|1|0|
+|1|1|
+|1|0|
+
+`project2.csv`
+
+- １稼働日毎のバグ数
+
+|days|bugs|
+|-:|-:|
+|1|3|
+|1|5|
+|1|10|
+|1|2|
+|1|1|
+|1|0|
+|1|0|
+|1|1|
+|1|0|
+|1|0|
+
+`project3.csv`
+
+- 週毎（５稼働日毎）のバグ数
+- 最後のデータだけ３稼働日のバグ数
+
+|days|bugs|
+|-:|-:|
+|5|15|
+|5|8|
+|5|0|
+|5|0|
+|5|1|
+|5|0|
+|3|0|
+
+- ポイント
+  - 時間軸は全てのデータで同じにする（上記の例では稼働日）
+  - バグが0の日もデータに入れる
+  - 各プロジェクトデータの列名を同じにしておくと楽
+
+### msrat用のデータ（data.frame）を作る
+
+```{r}
+metrics <- read.csv(file="smetrics.csv", row.names=1)
+bugs <- list(
+  project1=read.csv(file="project1.csv"),
+  project2=read.csv(file="project2.csv"),
+  project3=read.csv(file="project3.csv")
+)
+metrics
+bugs
+```
+
+- ポイント
+  - smetrics.csvの最初の列を行のラベルにする（`row.names=1`）
+  - list()の`project1=`, `project2=`, `project3=` は`smetrics.csv`の最初の列のプロジェクト名と同じにすると後の作業が楽
+
+### 各プロジェクト単体でモデル推定する
+
+- `fit.srm.nhpp`で各プロジェクトを個別に推定
+
+```{r}
+result <- lapply(bugs, function(dat) fit.srm.nhpp(time=dat$days, fault=dat$bugs))
+```
+
+推定結果
+```{r}
+result
+```
+
+
+project1
+```{r}
+mvfplot(time=bugs$project1$days, fault=bugs$project1$bugs,
+        mvf=list(result$project1$srm))
+```
+
+project2
+```{r}
+mvfplot(time=bugs$project2$days, fault=bugs$project2$bugs,
+        mvf=list(result$project2$srm))
+```
+
+project3
+```{r}
+mvfplot(time=bugs$project3$days, fault=bugs$project3$bugs,
+        mvf=list(result$project3$srm))
+```
+
+- モデルを固定する場合は `Rsrat::fit.srm.nhpp(time=dat$days, fault=dat$bugs, srm.names="tlogis")` のように `srm.names` を指定する．モデル名は`Rsrat::srm.models`にあるものが使える
+
+```{r}
+Rsrat::srm.models
+```
+
+### smetricsを使って再推定する（その1）
+
+- s-metricsデータを使って s-metrics に対する回帰係数と各プロジェクトのモデルのパラメータを再推定する．
+- ここでは`linkfun="log"`（デフォルト）を使う（回帰の方のモデル）
+
+```{r}
+poiresult <- fit.srm.poireg(formula=~1+KLOC, data=metrics, srms=result)
+```
+
+- グラフのためにモデルのラベルを変更（必ずしも必要な作業ではありません）
+```{r}
+poiresult$srm$srms$project1$name <- paste(poiresult$srm$srms$project1$name, "(poireg)")
+poiresult$srm$srms$project2$name <- paste(poiresult$srm$srms$project2$name, "(poireg)")
+poiresult$srm$srms$project3$name <- paste(poiresult$srm$srms$project3$name, "(poireg)")
+```
+
+推定結果
+
+```{r}
+poiresult
+```
+
+project1
+```{r}
+mvfplot(time=bugs$project1$days, fault=bugs$project1$bugs,
+        mvf=list(result$project1$srm,poiresult$srm$srms$project1))
+```
+
+project2
+```{r}
+mvfplot(time=bugs$project2$days, fault=bugs$project2$bugs,
+        mvf=list(result$project2$srm,poiresult$srm$srms$project2))
+```
+
+project3
+```{r}
+mvfplot(time=bugs$project3$days, fault=bugs$project3$bugs,
+        mvf=list(result$project3$srm,poiresult$srm$srms$project3))
+```
+
+#### 変数選択で効果のある要因だけを残す
+
+```{r}
+poiresult2 <- step(poiresult) # 変数減少法
+```
+
+- グラフのためにモデルのラベルを変更（必ずしも必要な作業ではありません）
+```{r}
+poiresult2$srm$srms$project1$name <- paste(poiresult2$srm$srms$project1$name, "(poireg2)")
+poiresult2$srm$srms$project2$name <- paste(poiresult2$srm$srms$project2$name, "(poireg2)")
+poiresult2$srm$srms$project3$name <- paste(poiresult2$srm$srms$project3$name, "(poireg2)")
+```
+
+結果
+
+```{r}
+poiresult2
+```
+
+project1
+```{r}
+mvfplot(time=bugs$project1$days, fault=bugs$project1$bugs,
+        mvf=list(result$project1$srm,poiresult$srm$srms$project1,poiresult2$srm$srms$project1))
+```
+
+project2
+```{r}
+mvfplot(time=bugs$project2$days, fault=bugs$project2$bugs,
+        mvf=list(result$project2$srm,poiresult$srm$srms$project2,poiresult2$srm$srms$project2))
+```
+
+project3
+```{r}
+mvfplot(time=bugs$project3$days, fault=bugs$project3$bugs,
+        mvf=list(result$project3$srm,poiresult$srm$srms$project3,poiresult2$srm$srms$project3))
+```
+
+### smetricsを使って再推定する（その2）
+
+- s-metricsデータを使って s-metrics に対する回帰係数と各プロジェクトのモデルのパラメータを再推定する．
+- ここでは`linkfun="identity"`を使う（回帰の方のモデル）
+
+```{r}
+poiresult <- fit.srm.poireg(formula=~1+KLOC, data=metrics, srms=result, linkfun="identity")
+```
+
+- グラフのためにモデルのラベルを変更（必ずしも必要な作業ではありません）
+```{r}
+poiresult$srm$srms$project1$name <- paste(poiresult$srm$srms$project1$name, "(poireg)")
+poiresult$srm$srms$project2$name <- paste(poiresult$srm$srms$project2$name, "(poireg)")
+poiresult$srm$srms$project3$name <- paste(poiresult$srm$srms$project3$name, "(poireg)")
+```
+
+推定結果
+
+```{r}
+poiresult
+```
+
+project1
+```{r}
+mvfplot(time=bugs$project1$days, fault=bugs$project1$bugs,
+        mvf=list(result$project1$srm,poiresult$srm$srms$project1))
+```
+
+project2
+```{r}
+mvfplot(time=bugs$project2$days, fault=bugs$project2$bugs,
+        mvf=list(result$project2$srm,poiresult$srm$srms$project2))
+```
+
+project3
+```{r}
+mvfplot(time=bugs$project3$days, fault=bugs$project3$bugs,
+        mvf=list(result$project3$srm,poiresult$srm$srms$project3))
+```
+
+#### 変数選択で効果のある要因だけを残す
+
+```{r}
+poiresult2 <- step(poiresult) # 変数減少法
+```
+
+- グラフのためにモデルのラベルを変更（必ずしも必要な作業ではありません）
+```{r}
+poiresult2$srm$srms$project1$name <- paste(poiresult2$srm$srms$project1$name, "(poireg2)")
+poiresult2$srm$srms$project2$name <- paste(poiresult2$srm$srms$project2$name, "(poireg2)")
+poiresult2$srm$srms$project3$name <- paste(poiresult2$srm$srms$project3$name, "(poireg2)")
+```
+
+結果
+
+```{r}
+poiresult2
+```
+
+project1
+```{r}
+mvfplot(time=bugs$project1$days, fault=bugs$project1$bugs,
+        mvf=list(result$project1$srm,poiresult$srm$srms$project1,poiresult2$srm$srms$project1))
+```
+
+project2
+```{r}
+mvfplot(time=bugs$project2$days, fault=bugs$project2$bugs,
+        mvf=list(result$project2$srm,poiresult$srm$srms$project2,poiresult2$srm$srms$project2))
+```
+
+project3
+```{r}
+mvfplot(time=bugs$project3$days, fault=bugs$project3$bugs,
+        mvf=list(result$project3$srm,poiresult$srm$srms$project3,poiresult2$srm$srms$project3))
+```
+
