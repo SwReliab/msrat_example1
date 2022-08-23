@@ -1,0 +1,60 @@
+---
+title: "msrat_example2"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## msrat利用例
+
+msratでは以下の二種類のメトリクスが利用できます．
+
+- d-metrics: dynamic メトリクス．テスト期間で変化するもの．例えば，その日のテストケース数や検証した機能数など
+- s-metrics: static メトリクス．テスト期間を通じて基本的に変化しないもの．開発規模など
+
+ここでは d-metrics の利用例を示します．
+
+### データ
+
+- 次のデータを利用
+  - fault: 発見バグ数
+  - tc: テストケース数
+  - ctc: その累積
+  - cov: コードカバレジの増分
+  - ccov: コードカバレッジ
+
+```{r}
+library(msrat)
+data(dmet)
+dmet.ds1
+```
+
+### 通常の評価
+
+```{r}
+m <- fit.srm.nhpp(fault=dmet.ds1$fault)
+mvfplot(fault=dmet.ds1$fault, mvf=list(m$srm))
+m$srm$omega() - m$srm$data$total # 残存バグ数
+```
+
+### カバレッジを考慮した評価
+
+```{r}
+m2 <- fit.srm.logit(formula=fault~tc+ctc+cov+ccov, data=dmet.ds1)
+m2 <- step(m2) # 変数選択
+mvfplot(fault=dmet.ds1$fault, mvf=list(m2$srm))
+dmvfplot(fault=dmet.ds1$fault, dmvf=list(m2$srm))
+m2$srm$omega() - m2$srm$data$total # 残存バグ数
+```
+
+### カバレッジを考慮した評価（10日分）
+
+```{r}
+m3 <- fit.srm.logit(formula=fault~tc+ctc+cov+ccov, data=dmet.ds1[1:10,])
+m3 <- step(m3) # 変数選択
+mvfplot(fault=dmet.ds1$fault[1:10], mvf=list(m3$srm))
+dmvfplot(fault=dmet.ds1$fault[1:10], dmvf=list(m3$srm))
+m3$srm$omega() - m3$srm$data$total # 残存バグ数
+```
